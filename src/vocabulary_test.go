@@ -212,7 +212,11 @@ func TestVocabularySearchByPattern(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			queryByPattern := voc.newQueryByPattern([]rune(strings.ReplaceAll(tc.pattern, "_", string(Empty))), tc.requiredIndex)
+			queryByPattern := voc.newQueryByPattern(
+				Pattern{
+					Sequence:          []rune(strings.ReplaceAll(tc.pattern, "_", string(Empty))),
+					RequiredPartIndex: tc.requiredIndex,
+				})
 
 			actualWords := []wordPart{}
 			for ep := queryByPattern(); ep.Entry != nil; ep = queryByPattern() {

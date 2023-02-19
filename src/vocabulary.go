@@ -22,6 +22,11 @@ type EntryPart struct {
 	PartIndex int
 }
 
+type Pattern struct {
+	Sequence          Segment
+	RequiredPartIndex int
+}
+
 func (voc *Vocabulary) Add(word string) {
 	wordRunes := []rune(word)
 
@@ -151,25 +156,25 @@ Optional parts should not "stick" to the word from any side
 In order to match, the word must conform to the length of the pattern
 (there should be enough empty space), all crossed optional parts, the required part.
 */
-func (voc *Vocabulary) newQueryByPattern(pattern []rune, requiredIndex int) func() EntryPart {
-	if len(pattern) < 2 {
+func (voc *Vocabulary) newQueryByPattern(pattern Pattern) func() EntryPart {
+	if len(pattern.Sequence) < 2 {
 		panic("pattern is too short")
 	}
 
-	if requiredIndex < 0 || requiredIndex > len(pattern) {
+	if pattern.RequiredPartIndex < 0 || pattern.RequiredPartIndex > len(pattern.Sequence) {
 		panic("requiredIndex is out of bounds")
 	}
 
-	if requiredIndex > 0 && requiredIndex < len(pattern) && pattern[requiredIndex-1] != Empty {
+	if pattern.RequiredPartIndex > 0 && pattern.RequiredPartIndex < len(pattern.Sequence) && pattern.Sequence[pattern.RequiredPartIndex-1] != Empty {
 		panic("requiredIndex is not pointing to the beginning of the required part")
 	}
 
-	leftPattern := pattern[0:requiredIndex]
+	leftPattern := pattern.Sequence[0:pattern.RequiredPartIndex]
 	requiredSubstring := []rune{}
 	requiredSubstringFinalized := false
 	rightPattern := []rune{}
-	for i := requiredIndex; i < len(pattern); i++ {
-		r := pattern[i]
+	for i := pattern.RequiredPartIndex; i < len(pattern.Sequence); i++ {
+		r := pattern.Sequence[i]
 		if r == Empty {
 			requiredSubstringFinalized = true
 		}
